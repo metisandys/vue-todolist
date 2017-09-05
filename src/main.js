@@ -19,7 +19,7 @@ var filters = {
 }
 
 
-new Vue({
+let app = new Vue({
 	el: '.todoapp',
 	data: {
 		title: 'todo-list',
@@ -30,12 +30,25 @@ new Vue({
 		}, {
 			content: 'vuex',
 			completed: false
-		}]
+		}],
+		hashName: 'all'
 	},
 	computed: {
 		remain: function() {
-			console.log(filters.active(this.todos).length);
 			return filters.active(this.todos).length;
+		},
+		isAll: {
+			get: function() {
+				return this.remain === 0;
+			},
+			set: function(value) {
+				this.todos.forEach((todos) => {
+					todos.completed = value;
+				});
+			}
+		},
+		filteredTodos() {
+			return filters[this.hashName](this.todos);
 		}
 	},
 	methods: {
@@ -48,6 +61,21 @@ new Vue({
 		},
 		removeTodo(index) {
 			this.todos.splice(index, 1);
+		},
+		clear() {
+			this.todos = filters.active(this.todos);
 		}
 	}
 })
+
+function hashChange() {
+	let hashName = location.hash.replace(/#\/?/, '');
+	if (filters[hashName]) {
+		app.hashName = hashName;
+	} else {
+		location.hash = '';
+		app.hash = 'all';
+	}
+}
+
+window.addEventListener('hashchange', hashChange)
